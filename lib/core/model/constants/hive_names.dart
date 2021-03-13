@@ -1,4 +1,4 @@
 class HiveConst {
   static String boxName = 'cacheBox';
-  static String loggedUser = 'loggedUser';
+  static String loggedUser = 'cachedLoggedUser';
 }

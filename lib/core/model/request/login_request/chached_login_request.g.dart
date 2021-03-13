@@ -19,17 +19,23 @@ class CachedLoggedUserAdapter extends TypeAdapter<CachedLoggedUser> {
     return CachedLoggedUser(
       userName: fields[0] as String,
       passWord: fields[1] as String,
+      rememberPass: fields[2] as bool,
+      keepLoggedIn: fields[3] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, CachedLoggedUser obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(4)
       ..writeByte(0)
       ..write(obj.userName)
       ..writeByte(1)
-      ..write(obj.passWord);
+      ..write(obj.passWord)
+      ..writeByte(2)
+      ..write(obj.rememberPass)
+      ..writeByte(3)
+      ..write(obj.keepLoggedIn);
   }
 
   @override

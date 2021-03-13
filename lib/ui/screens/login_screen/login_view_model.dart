@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hamidreza_test_march8/core/model/constants/hive_names.dart';
 import 'package:hamidreza_test_march8/core/model/constants/user_pass_test.dart';
+import 'package:hamidreza_test_march8/core/model/request/login_request/chached_login_request.dart';
 import 'package:hamidreza_test_march8/core/model/request/login_request/login_request.dart';
 import 'package:hamidreza_test_march8/core/services/functional_services/hive_service.dart';
 import 'package:hamidreza_test_march8/shared/locator/locator.dart';
@@ -14,9 +15,13 @@ class LoginViewModel extends BaseViewModel {
   final GlobalKey<FormState> loginKey = GlobalKey();
   Map<String, dynamic> formValues = Map();
 
+  ///material needed for the login fields to be generated.
   LoginRequest loginRequest = LoginRequest();
-  bool rememberPassword = false;
-  bool keepLoggedIn = false;
+  bool rememberPassword;
+  bool keepLoggedIn;
+
+  ///cashed logged user initialized
+  CachedLoggedUser cachedLoggedUser;
 
   onModelReady() async {
     //TODO: get the inforamtion from cache and set the keepLoggedIN and rememberPassword
@@ -26,12 +31,54 @@ class LoginViewModel extends BaseViewModel {
   ///
   ///
   ///
-  Future<void> cacheLoggedUser(LoginRequest loginRequest) async {
-    _hiveService.cache(loginRequest, HiveConst.boxName, HiveConst.loggedUser);
+  Future<void> cacheLoggedUser1(CachedLoggedUser cachedLoggedUser) async {
+    _hiveService.cache(
+        cachedLoggedUser, HiveConst.boxName, HiveConst.loggedUser);
   }
 
-  Future<LoginRequest> releaseLoggedUser() async {
+  ///function for fetching the logged user data
+  ///
+  /// returns the user object
+  Future<CachedLoggedUser> releaseLoggedUser() async {
     return _hiveService.retrieve(HiveConst.boxName, HiveConst.loggedUser);
+  }
+
+  /// function for checking the situation of login
+  /// if the object of the user are existing: check data with accepted password
+  /// if they are in sync:
+  /// if the data are fetched and the booleans have value: check if the keep me logged in is true:
+  /// if it is true, login to the system,
+  /// if the keep me logged in is false , check if remember password is true:
+  /// if it is true, set the values as the initial values and navigate to the login page.
+  /// if the user is fetched from the hive and values are set to false:
+  /// ask the user for username and password.
+  ///
+  ///
+  void checkStatusLogin() async {
+    cachedLoggedUser = await releaseLoggedUser();
+    if (cachedLoggedUser == null) {
+      cachedLoggedUser = CachedLoggedUser(
+          userName: "", passWord: "", rememberPass: false, keepLoggedIn: false);
+      cacheLoggedUser1(cachedLoggedUser);
+
+      // loginRequest.userName = "";
+      // loginRequest.passWord = "";
+      // rememberPassword = false;
+      // remember
+
+    } else {
+      if (cachedLoggedUser.keepLoggedIn == true &&
+          cachedLoggedUser.passWord == UserPassTest.passWord) {
+        // navigate to next page.
+
+      } else if (cachedLoggedUser.rememberPass == true &&
+          cachedLoggedUser.passWord == UserPassTest.passWord) {
+        // login with filled textFields
+        return;
+      } else {
+        //login same as before.
+      }
+    }
   }
 
   void navigateSuccess() {
