@@ -8,7 +8,7 @@ class HiveService {
   /// Caches the model inside a box with the name [boxName] as the property name of [propertyName]
   ///
   /// Returns [void]
-  void cache<T>(T model, String boxName, String propertyName,
+  void cache(HiveObject model, String boxName, String propertyName,
       {Function onError}) async {
     return await boxInteraction<dynamic, void>(boxName, (Box box) async {
       await box.put(propertyName, model);
@@ -16,6 +16,7 @@ class HiveService {
   }
 
   /// Retrieves the model inside a box with the name [boxName] and the property name of [propertyName]
+  /// Does not close the hive box and other hive methods should implement box.close()!!!!
   ///
   /// Returns [T] as the type of the returned object
   Future<T> retrieve<T>(String boxName, String propertyName,
@@ -23,6 +24,16 @@ class HiveService {
     return await boxInteraction<dynamic, T>(boxName, (Box box) async {
       return await box.get(propertyName) as T;
     }, onError);
+  }
+
+  /// Asks for box with the name [boxName] and the Hive object that already exists in our model called [model]
+  /// Updates the cache value already stored in the hive.
+  ///
+  /// Returns [void]
+  void boxUpdate(String boxName, HiveObject model) async {
+    final box = await _hive.openBox(boxName);
+    model.save();
+    box.close();
   }
 
   //          ########## HELPER METHODSs ##########
@@ -38,7 +49,7 @@ class HiveService {
     try {
       final box = await _hive.openBox<E>(boxName);
       final T result = await action(box);
-      await box.close();
+      // await box.close();
       return result;
     } on Exception catch (e) {
       print(e);

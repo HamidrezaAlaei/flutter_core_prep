@@ -1,14 +1,26 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:hamidreza_test_march8/core/model/request/login_request/chached_login_request.dart';
 import 'package:hamidreza_test_march8/shared/locator/locator.dart';
 import 'package:hamidreza_test_march8/shared/router/router.gr.dart' as R;
 import 'package:hive/hive.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:stacked_services/stacked_services.dart';
 
 Future<void> main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  // WidgetsFlutterBinding.ensureInitialized();
   //Hive
-  Hive.initFlutter();
+  // var appDir = await getApplicationDocumentsDirectory();
+  // Hive.initFlutter(appDir.path);
+  WidgetsFlutterBinding.ensureInitialized();
+  if (!kIsWeb) {
+    var appDir = await getApplicationDocumentsDirectory();
+    var path = appDir.path;
+    Hive.init(path);
+  }
+
+  //registering the adapter for the cached class.
+  Hive.registerAdapter(CachedLoggedUserAdapter());
 
   // Sets up the location so that all the singletons can get initialzed.
   setupLocator();

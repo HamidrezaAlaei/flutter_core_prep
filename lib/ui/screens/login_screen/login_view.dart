@@ -13,74 +13,85 @@ class LoginView extends StatelessWidget {
   Widget build(BuildContext context) {
     return ViewModelBuilder<LoginViewModel>.reactive(
       viewModelBuilder: () => LoginViewModel(),
+      onModelReady: (model) => model.onModelReady(),
       builder: (context, model, child) {
         return Scaffold(
           backgroundColor: Colors.deepPurple,
           appBar: createAppBar(model),
           body: SafeArea(
-            child: Form(
-              key: model.loginKey,
-              child: Container(
-                child: Center(
-                  child: Column(
-                    children: [
-                      Flexible(
-                        flex: 5,
-                        child: Padding(
-                          padding: const EdgeInsets.all(15.0),
-                          child: DecoratedImageBoxLogo(),
+            child: model.isBusy
+                ? Center(
+                    child: CircularProgressIndicator(),
+                  )
+                : Form(
+                    key: model.loginKey,
+                    child: Container(
+                      child: Center(
+                        child: Column(
+                          children: [
+                            Flexible(
+                              flex: 5,
+                              child: Padding(
+                                padding: const EdgeInsets.all(15.0),
+                                child: DecoratedImageBoxLogo(),
+                              ),
+                            ),
+                            Flexible(
+                              flex: 3,
+                              child: TextFromField(
+                                name: LoggedUserNames.userName,
+                                hintText: 'User Name',
+                                fieldInitialValue: model.getUserName(),
+                                onSaved: model.saveForm,
+                                validator: model.validateUserName,
+                              ),
+                            ),
+                            Flexible(
+                              flex: 3,
+                              child: TextFromField(
+                                name: LoggedUserNames.passWord,
+                                hintText: 'Pass word',
+                                fieldInitialValue: model.getPassWord(),
+                                onSaved: model.saveForm,
+                                validator: model.validatePassWord,
+                              ),
+                            ),
+                            Flexible(
+                              flex: 1,
+                              child: CheckboxListTile(
+                                title: Text('Save my password'),
+                                controlAffinity:
+                                    ListTileControlAffinity.platform,
+                                value: model.getRememebrPass(),
+                                onChanged: (value) =>
+                                    model.setRememberPass(value),
+                              ),
+                            ),
+                            Flexible(
+                              flex: 1,
+                              child: CheckboxListTile(
+                                title: Text('Keep me logged in'),
+                                controlAffinity:
+                                    ListTileControlAffinity.platform,
+                                value: model.getKeepLogedIn(),
+                                onChanged: (value) =>
+                                    model.setKeepLoggedIn(value),
+                              ),
+                            ),
+                            Flexible(
+                              flex: 1,
+                              child: OutlinedButton(
+                                onPressed: model.validateForm,
+                                child: Text('Login'),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      Flexible(
-                        flex: 3,
-                        child: TextFromField(
-                          name: LoggedUserNames.userName,
-                          hintText: 'User Name',
-                          onSaved: model.saveForm,
-                          validator: model.validateUserName,
-                        ),
-                      ),
-                      Flexible(
-                        flex: 3,
-                        child: TextFromField(
-                          name: LoggedUserNames.passWord,
-                          hintText: 'Pass word',
-                          onSaved: model.saveForm,
-                          validator: model.validatePassWord,
-                        ),
-                      ),
-                      Flexible(
-                        flex: 1,
-                        child: CheckboxListTile(
-                          title: Text('Save my password'),
-                          controlAffinity: ListTileControlAffinity.platform,
-                          value: model.rememberPassword,
-                          onChanged: model.changeVal,
-                        ),
-                      ),
-                      Flexible(
-                        flex: 1,
-                        child: CheckboxListTile(
-                          title: Text('Keep me logged in'),
-                          controlAffinity: ListTileControlAffinity.platform,
-                          value: model.keepLoggedIn,
-                          onChanged: model.changeValEver,
-                        ),
-                      ),
-                      Flexible(
-                        flex: 1,
-                        child: OutlinedButton(
-                          onPressed: model.validateForm,
-                          child: Text('Login'),
-                        ),
-                      ),
-                    ],
+                      //login username
+                      //login password
+                    ),
                   ),
-                ),
-                //login username
-                //login password
-              ),
-            ),
           ),
         );
       },

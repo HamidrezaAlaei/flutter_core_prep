@@ -5,13 +5,13 @@ part 'chached_login_request.g.dart';
 @HiveType(typeId: 1)
 class CachedLoggedUser extends HiveObject {
   @HiveField(0)
-  final String userName;
+  String userName;
   @HiveField(1)
-  final String passWord;
+  String passWord;
   @HiveField(2)
-  final bool rememberPass;
+  bool rememberPass;
   @HiveField(3)
-  final bool keepLoggedIn;
+  bool keepLoggedIn;
 
   CachedLoggedUser(
       {this.userName, this.passWord, this.rememberPass, this.keepLoggedIn});

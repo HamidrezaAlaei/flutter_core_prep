@@ -17,14 +17,15 @@ class LoginViewModel extends BaseViewModel {
 
   ///material needed for the login fields to be generated.
   LoginRequest loginRequest = LoginRequest();
-  bool rememberPassword;
-  bool keepLoggedIn;
+  bool rememberPassword = false;
+  bool keepLoggedIn = false;
 
   ///cashed logged user initialized
   CachedLoggedUser cachedLoggedUser;
 
   onModelReady() async {
     //TODO: get the inforamtion from cache and set the keepLoggedIN and rememberPassword
+    checkStatusLogin();
   }
 
   ///cache logged user
@@ -34,6 +35,7 @@ class LoginViewModel extends BaseViewModel {
   Future<void> cacheLoggedUser1(CachedLoggedUser cachedLoggedUser) async {
     _hiveService.cache(
         cachedLoggedUser, HiveConst.boxName, HiveConst.loggedUser);
+    cachedLoggedUser.save();
   }
 
   ///function for fetching the logged user data
@@ -55,29 +57,38 @@ class LoginViewModel extends BaseViewModel {
   ///
   ///
   void checkStatusLogin() async {
+    setBusy(true);
     cachedLoggedUser = await releaseLoggedUser();
+    print(cachedLoggedUser.userName);
     if (cachedLoggedUser == null) {
       cachedLoggedUser = CachedLoggedUser(
           userName: "", passWord: "", rememberPass: false, keepLoggedIn: false);
+
+      ///sample code syntax review.
+      // var test = CachedLoggedUser()
+      //   ..rememberPass = true
+      //   ..keepLoggedIn = false
+      //   ..userName = '2';
+
       cacheLoggedUser1(cachedLoggedUser);
+      setBusy(false);
+      return;
+    }
+    setBusy(false);
+    if (cachedLoggedUser.keepLoggedIn == true &&
+        cachedLoggedUser.passWord == UserPassTest.passWord) {
+      // navigate to next page.
+      navigateSuccess();
+    } else if (cachedLoggedUser.rememberPass == true &&
+        cachedLoggedUser.passWord == UserPassTest.passWord) {
+      setRememberPass(true);
+      setKeepLoggedIn(false);
+      notifyListeners();
 
-      // loginRequest.userName = "";
-      // loginRequest.passWord = "";
-      // rememberPassword = false;
-      // remember
-
+      return;
     } else {
-      if (cachedLoggedUser.keepLoggedIn == true &&
-          cachedLoggedUser.passWord == UserPassTest.passWord) {
-        // navigate to next page.
+      //login same as before.
 
-      } else if (cachedLoggedUser.rememberPass == true &&
-          cachedLoggedUser.passWord == UserPassTest.passWord) {
-        // login with filled textFields
-        return;
-      } else {
-        //login same as before.
-      }
     }
   }
 
@@ -113,29 +124,54 @@ class LoginViewModel extends BaseViewModel {
   void saveForm<T>(String name, T value) {
     formValues[name] = value;
     loginRequest[name] = value;
-    // print(name);
-    // print(user.toJson());
   }
 
   //checking to see if data read from user is correct.
   void _validateResults() {
     if (loginRequest.userName == UserPassTest.userName &&
         loginRequest.passWord == UserPassTest.passWord) {
+      cachedLoggedUser.userName = loginRequest.userName;
+      cachedLoggedUser.passWord = loginRequest.passWord;
+      cachedLoggedUser.keepLoggedIn = getKeepLogedIn();
+      cachedLoggedUser.rememberPass = getRememebrPass();
+      _hiveService.boxUpdate(HiveConst.boxName, cachedLoggedUser);
       navigateSuccess();
     }
   }
 
-  void changeVal(bool value) {
-    // setBusy(true);
-    this.rememberPassword = !rememberPassword;
-    notifyListeners();
-    // setBusy(false);
+  ///gets the cached [userName] from the object instantiated with the hive method.
+  ///
+  /// returns String of [cachedLoggedUser] username
+  String getUserName() {
+    return cachedLoggedUser.userName;
   }
 
-  void changeValEver(bool value) {
-    // setBusy(true);
-    this.keepLoggedIn = !keepLoggedIn;
+  ///gets the cached [passWord] from the object instantiated with the hive method.
+  ///
+  /// returns String of [cachedLoggedUser] password.
+  String getPassWord() {
+    return cachedLoggedUser.passWord;
+  }
+
+  ///gets a boolean [val] and sets it to the class rememebrPassword value.
+  void setRememberPass(bool val) {
+    this.rememberPassword = val;
     notifyListeners();
-    // setBusy(false);
+  }
+
+  ///gets a boolean [val] and sets it to the class keepLoggedIn value.
+  void setKeepLoggedIn(bool val) {
+    this.keepLoggedIn = val;
+    notifyListeners();
+  }
+
+  ///gets the boolean value for the remember password
+  bool getRememebrPass() {
+    return rememberPassword;
+  }
+
+  ///gets the boolean value for the keep me logged in.
+  bool getKeepLogedIn() {
+    return keepLoggedIn;
   }
 }
